@@ -1,0 +1,152 @@
+Deep Research Prompt: Golden Fleece — AI Trading Agent (ERC-8004 Hackathon)
+
+CONTEXT
+
+We are building a trustless AI trading agent for the AI Trading Agents with ERC-8004 Hackathon (March 9–22, 2026, $50K prize pool). The agent must register on the ERC-8004 Identity Registry, accumulate reputation from trading outcomes, produce validation artifacts for every key action, and execute trades through a whitelisted Risk Router contract on Base Sepolia. Judging emphasizes risk-adjusted returns (Sharpe ratio), drawdown control, validation quality, and presentation — not raw PnL.
+
+Our proposed stack is Python (AI/trading logic) + TypeScript (on-chain integration and Next.js dashboard), using Claude Opus as the primary LLM, viem for contract interactions, and Foundry for Solidity tooling.
+
+Please perform deep research on each of the following 12 areas. For each area, provide: (1) Key Findings, (2) Specific Recommendations for our project, (3) Risks and Unknowns, and (4) Links and Resources. Prioritize actionable specificity — we need concrete answers (contract addresses, API endpoints, code examples), not just overviews. Flag anything where our assumptions might be wrong or outdated.
+
+
+AREA 1: ERC-8004 Standard — Current State & Implementation Reality
+
+- What is the current status of ERC-8004 (EIP-8004)? Is it Draft, Review, or Final? What are the latest changes to the spec?
+- Examine the ERC-8004 contracts repo (https://github.com/erc-8004/erc-8004-contracts): What contracts are deployed on Base Sepolia? What are their addresses? Are there known bugs or limitations?
+- Examine the awesome-erc8004 repo (https://github.com/sudeepb02/awesome-erc8004): What JS/TS SDK tooling exists? How mature is it? Are there Python bindings?
+- Read the Ethereum Magicians discussion (https://ethereum-magicians.org/t/erc-8004-trustless-agents/25098) for any gotchas, open questions, or implementation notes from the authors.
+- Check 8004.org for any official documentation, tutorials, or example agents.
+- Are there any existing open-source agents that have already integrated ERC-8004 that we can learn from?
+- What is the exact flow for: (a) registering an agent identity, (b) logging a validation artifact, (c) submitting reputation feedback? Walk through each step including contract calls, required parameters, and gas considerations on Base Sepolia.
+
+
+AREA 2: EIP Dependencies — EIP-712, EIP-1271, EIP-155
+
+- EIP-712 (Typed Data Signing): What are the best practices for constructing typed data for trade intents? What libraries in Python and TypeScript handle EIP-712 signing well? How do you structure the domain separator and type hashes for a trading agent context?
+- EIP-1271 (Smart Contract Wallet Signatures): What are the options for an EIP-1271 compliant smart contract wallet?
+  - Safe (Gnosis Safe): How do you deploy a Safe on Base Sepolia? Can a Safe be used as an agent wallet for ERC-8004? What are the trade-offs (gas, complexity, multi-sig overhead)?
+  - Custom minimal EIP-1271 wallet: What does a minimal implementation look like? Are there audited templates? What are the security considerations?
+  - Other options: Are there lighter-weight alternatives like Kernel, Biconomy, or ZeroDev smart accounts that support EIP-1271?
+- EIP-155 (Chain ID): Base Sepolia chain ID is 84532. Any specific considerations for chain-ID binding in the context of ERC-8004?
+
+
+AREA 3: Base Sepolia — DEX & DeFi Ecosystem
+
+- What DEXes are deployed and active on Base Sepolia? (Uniswap V3, Aerodrome, SushiSwap, etc.)
+- What tokens and trading pairs have liquidity on Base Sepolia? Are there standard test tokens?
+- How do you get testnet ETH and tokens on Base Sepolia? What faucets are available and reliable?
+- What is the block time and gas cost profile on Base Sepolia?
+- Are there any DeFi yield protocols (lending, staking, LPing) deployed on Base Sepolia that could be used for the "Best Yield/Portfolio Agent" prize track?
+- What subgraphs or indexers are available for Base Sepolia DEXes?
+- Is there a Risk Router contract already deployed by the hackathon organizers, or do we need to build one? What is its interface?
+
+
+AREA 4: Agent Architecture — Framework & Orchestration
+
+- Custom orchestrator vs. LangGraph vs. other frameworks: For a 13-day hackathon with a focused trading use case, what is the fastest path to a working multi-component agent? Compare:
+  - Bare Python event loop with Claude API calls
+  - LangGraph (stateful graph-based orchestration)
+  - CrewAI / AutoGen / other multi-agent frameworks
+  - Anthropic's Claude Agent SDK (if available — check latest status)
+- Claude API best practices for trading agents:
+  - How should we use extended thinking for complex market analysis decisions?
+  - What is the optimal tool use setup for giving Claude access to market data, on-chain state, and trading actions?
+  - How do we manage context windows effectively when feeding in price data, news, and portfolio state?
+  - What are the rate limits and pricing for Claude Opus 4.6 API calls? How do we budget for a 13-day hackathon?
+- State management: How should the agent persist state between cycles (portfolio positions, historical decisions, strategy parameters)?
+
+
+AREA 5: Market Data APIs — Availability, Reliability, and Integration
+
+For each of the following, research: current API status, rate limits, authentication requirements, data freshness, Python SDK availability, and suitability for a trading agent running on testnet:
+
+- GeckoTerminal API: Does it cover Base Sepolia DEX data, or only mainnet? If only mainnet, can we use mainnet price data as a signal while trading on testnet?
+- CoinGecko API: Free tier limits? Does the /coins/{id}/ohlc endpoint provide sufficient granularity (1m, 5m candles)?
+- DeFiLlama API: Does it have Base Sepolia data? Yield/TVL data availability?
+- Chainlink Price Feeds: Which feeds are deployed on Base Sepolia? Contract addresses?
+- The Graph: Are there Base Sepolia subgraphs for major DEXes? How to query them?
+- Birdeye / DexScreener / Defined.fi: Are there alternative DEX data APIs that might be better?
+- CryptoPanic API: Current status, sentiment scoring quality, rate limits?
+- Alternative sentiment sources: LunarCrush, Santiment, or others with free tiers?
+- On-chain data via RPC: What's the best RPC provider for Base Sepolia? (Alchemy, Infura, QuickNode, Blast, etc.) Free tier limits?
+
+
+AREA 6: Trading Strategy — Risk-Adjusted Return Optimization
+
+- Sharpe ratio optimization: What are the best approaches for maximizing Sharpe ratio in a crypto trading context over a short time horizon (13 days)?
+- Kelly criterion for position sizing: How is Kelly criterion adapted for crypto markets? What are practical implementations?
+- Drawdown control mechanisms: What circuit breaker patterns are used in algorithmic trading? Typical thresholds?
+- Market regime detection: What are lightweight, effective methods for detecting trending vs. ranging vs. high-volatility regimes in crypto? Technical indicators vs. ML approaches?
+- Mean-reversion vs. momentum: Which tends to perform better on DEX pairs in testnet-like low-liquidity environments?
+- DeFi yield strategies: What simple, safe yield strategies could we implement (e.g., LP provision with concentrated liquidity, lending rate arbitrage)?
+- Backtesting: What Python backtesting frameworks work well for crypto? (Backtrader, Zipline, vectorbt, custom?)
+- Are there any open-source crypto trading bots (e.g., Hummingbot, Freqtrade, Jesse) with components we could adapt?
+
+
+AREA 7: Validation & Trust Model — Maximizing ERC-8004 Integration Depth
+
+- What constitutes a high-quality validation artifact in the ERC-8004 context? What should the content and structure of requestURI and responseURI look like?
+- How should we hash and store validation data? IPFS vs. Arweave vs. on-chain storage vs. centralized with hash on-chain?
+- What is the optimal frequency of validation logging? Every decision? Every trade? Key checkpoints only?
+- How can we demonstrate trustlessness — that the agent's decisions are verifiable and auditable by third parties?
+- Are there examples of reputation scoring models that work well with the ERC-8004 Reputation Registry?
+
+
+AREA 8: Dashboard & Presentation
+
+- Real-time trading dashboards: What are the best open-source examples of crypto trading dashboards built with Next.js?
+- TradingView Lightweight Charts vs. Recharts vs. Chart.js: Which is best for real-time candlestick charts with overlays (indicators, trade markers)?
+- WebSocket vs. SSE vs. polling: For a Python backend + Next.js frontend, what's the most reliable real-time communication pattern?
+- Key metrics to display: Beyond PnL and Sharpe, what metrics would impress judges? (e.g., validation audit trail, decision reasoning timeline, risk heat map)
+
+
+AREA 9: Infrastructure & DevOps for a Hackathon
+
+- Monorepo setup: What's the best monorepo tool for a Python + TypeScript project? (Turborepo, Nx, simple workspaces?)
+- Python environment: Poetry vs. uv vs. pip for fast setup?
+- Deployment: For a hackathon demo, is it worth deploying, or is local demo sufficient? If deploying:
+  - Vercel for Next.js dashboard
+  - Railway / Fly.io / Render for Python agent
+  - What's the cheapest/fastest?
+- Environment management: How to securely manage API keys, private keys, and RPC URLs across Python and TypeScript?
+
+
+AREA 10: Competitive Analysis & Differentiation
+
+- Look at past lablab.ai hackathon winners — what patterns distinguish winning projects? What level of polish is expected?
+- Are there any publicly available submissions from previous ERC-8004 or AI trading hackathons to study?
+- What would make our agent stand out for "Best Trustless Trading Agent" ($10K prize)? What unique angle could we take?
+- What business value narrative would resonate with judges? (e.g., "autonomous fund manager with verifiable track record", "trustless trading-as-a-service")
+
+
+AREA 11: Legal & Compliance Considerations
+
+- Are there any legal considerations for building AI trading agents, even on testnet?
+- The hackathon mentions a Surge capital program — what is Surge, how does the profit-sharing work, and what are the terms?
+- Any KYC requirements for the hackathon or prize distribution?
+
+
+AREA 12: Hackathon-Specific Intelligence
+
+- Check the hackathon page (https://lablab.ai/ai-hackathons/ai-trading-agents-erc-8004) for:
+  - Updated rules, requirements, or schedule changes
+  - Mentor/judge profiles (what do they value?)
+  - Discord or community channels for early insights
+  - Workshop schedule and topics
+  - Any starter kits, boilerplate repos, or sandbox environments provided
+- Are there partner APIs or sponsored tools that give bonus points or free access during the hackathon?
+
+
+OUTPUT FORMAT
+
+For each of the 12 research areas, structure your response as:
+
+[Area Name]
+
+Key Findings: Concise summary of what you discovered.
+
+Recommendations: Specific, actionable recommendations for our project.
+
+Risks & Unknowns: What couldn't be determined and what we should investigate during the hackathon.
+
+Links & Resources: URLs to documentation, repos, or examples referenced.
