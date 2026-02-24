@@ -1,0 +1,16 @@
+{
+  "name": "golden-fleece",
+  "private": true,
+  "scripts": {
+    "dev:dashboard": "pnpm --filter @golden-fleece/dashboard dev",
+    "build:dashboard": "pnpm --filter @golden-fleece/dashboard build",
+    "build:shared": "pnpm --filter @golden-fleece/shared build",
+    "lint": "pnpm --filter @golden-fleece/dashboard lint",
+    "test:dashboard": "pnpm --filter @golden-fleece/dashboard test"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

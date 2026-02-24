@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.venv/
+*.egg
+
+# uv
+uv.lock
+
+# Node
+node_modules/
+.next/
+out/
+.turbo/
+
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/lib/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Data & artifacts
+data/
+*.sqlite
+*.db
+checkpoints/
+
+# Coverage
+.coverage
+htmlcov/
+coverage/
+.nyc_output/
+
+# Misc
+*.log
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
