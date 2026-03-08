@@ -28,15 +28,15 @@ The simplest way to think about it:
 
 ```
 Traditional trading bot:          Golden Fleece:
-┌──────────────┐                  ┌──────────────┐
+┌───────────────┐                  ┌───────────────┐
 │  See signal   │                  │  See signal   │
 │  Make trade   │                  │  Make trade   │
 │  Hope it works│                  │  Prove WHY    │ ← This is the difference
-└──────────────┘                  │  Prove WHAT   │
-                                  │  Prove HOW    │
-                                  │  Anyone can   │
-                                  │  verify it    │
-                                  └──────────────┘
+└───────────────┘                  │  Prove WHAT   │
+                                   │  Prove HOW    │
+                                   │  Anyone can   │
+                                   │  verify it    │
+                                   └───────────────┘
 ```
 
 The pitch is: **"Not an AI that trades — a verifiable on-chain track record generator."** Anyone should be able to take our agent's published artifacts, re-check the math, verify the blockchain transactions, and confirm that the performance numbers are real. This is what ERC-8004 enables, and it's what the hackathon judges care most about.
